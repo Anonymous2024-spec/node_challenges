@@ -1,4 +1,6 @@
 const express = require("express");
+const Jpi = require("joi");
+
 const app = express();
 
 // middleware
@@ -81,12 +83,25 @@ app.put("/api/books/:id", (req, res) => {
   const oneBook = books.find((b) => b.id === parseInt(req.params.id));
   if (!oneBook) return res.status(404).send("Id not sent");
 
+  const { error } = validateFields(req.body);
+  if (error) return res.send(404).send("All fields are required");
+
   // update book
   oneBook.title = req.body.title;
   oneBook.author = req.body.author;
   oneBook.year = req.body.year;
   res.send(oneBook);
 });
+
+// function validate
+function validateFields(book) {
+  const schema = {
+    title: Joi.String().min(3).required,
+    author: Joi.String().min(3).required,
+    year: Joi.Integer().min(4).required,
+  };
+  return Joi.validateFields(book, schema);
+}
 
 // server create
 const port = process.env.PORT || 3000;
